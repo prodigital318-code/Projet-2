@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace Administrateur - Gestion des Horaires</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-logout {
+            padding: 8px 16px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: #c82333;
+        }
+
+        .admin-content {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 20px;
+        }
+
+        .add-employe-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+
+        .employes-list-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .employe-form .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e1e5e9;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #2699e7;
+        }
+
+        .btn-add {
+            width: 100%;
+            padding: 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-add:hover {
+            background: #218838;
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e1e5e9;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .employes-list {
+            display: grid;
+            gap: 10px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .employe-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #2699e7;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .employe-card:hover {
+            transform: translateX(5px);
+            background: #e9ecef;
+        }
+
+        .employe-info-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .employe-name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .employe-details {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .employe-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-conge {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-content.large {
+            max-width: 900px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .modal-body {
+            margin-top: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .info-item label {
+            font-weight: bold;
+        }
+
+        .modal-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .btn-conges, .btn-horaires, .btn-supprimer, .btn-add-conge, .btn-filter {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-conges {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .btn-conges:hover {
+            background: #e0a800;
+        }
+
+        .btn-horaires {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-horaires:hover {
+            background: #138496;
+        }
+
+        .btn-supprimer {
+            background: #dc3545;
+            color: white;
+            grid-column: 1 / -1;
+        }
+
+        .btn-supprimer:hover {
+            background: #c82333;
+        }
+
+        .btn-add-conge {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-add-conge:hover {
+            background: #218838;
+        }
+
+        .btn-filter {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-filter:hover {
+            background: #5a6268;
+        }
+
+        /* Selfies */
+        .selfies-section {
+            margin-top: 20px;
+        }
+
+        .selfies-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .selfie-item {
+            text-align: center;
+        }
+
+        .selfie-img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 2px solid #e1e5e9;
+        }
+
+        .selfie-time {
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Congés */
+        .conges-list {
+            margin-top: 20px;
+        }
+
+        .conge-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .conge-dates {
+            font-weight: bold;
+        }
+
+        .conge-motif {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Horaires */
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .statistiques {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2699e7;
+        }
+
+        .horaires-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .horaire-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .horaire-item.retard {
+            border-left: 4px solid #dc3545;
+        }
+
+        .horaire-item.normal {
+            border-left: 4px solid #28a745;
+        }
+
+        .horaire-time {
+            font-weight: bold;
+        }
+
+        .horaire-type {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .admin-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .modal-actions {
+                grid-template-columns: 1fr;
+            }
+            
+            .statistiques {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Espace Administrateur</h1>
+            <div class="admin-info">
+                <span id="adminName">Administrateur</span>
+                <button id="logoutBtn" class="btn-logout">Déconnexion</button>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <!-- Section ajout employé -->
+            <div class="add-employe-section">
+                <h2>Ajouter un Employé</h2>
+                <form id="addEmployeForm" class="employe-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="employeNom">Nom:</label>
+                            <input type="text" id="employeNom" name="nom" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="employePrenom">Prénom:</label>
+                            <input type="text" id="employePrenom" name="prenom" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="employeEmail">Email:</label>
+                        <input type="email" id="employeEmail" name="email" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="employeShift">Shift:</label>
+                            <select id="employeShift" name="shift" required>
+                                <option value="jour">Jour (08:00 - 17:00)</option>
+                                <option value="soir">Soir (14:00 - 23:00)</option>
+                                <option value="nuit">Nuit (22:00 - 07:00)</option>
+                                <option value="personnalise">Personnalisé</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" id="customShiftGroup" style="display: none;">
+                            <label for="customHeureDebut">Heure début:</label>
+                            <input type="time" id="customHeureDebut" name="heureDebut">
+                        </div>
+                        
+                        <div class="form-group" id="customShiftGroup2" style="display: none;">
+                            <label for="customHeureFin">Heure fin:</label>
+                            <input type="time" id="customHeureFin" name="heureFin">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-add">Inviter l'Employé</button>
+                </form>
+            </div>
+
+            <!-- Liste des employés -->
+            <div class="employes-list-section">
+                <h2>Liste des Employés</h2>
+                <div class="search-bar">
+                    <input type="text" id="searchEmploye" placeholder="Rechercher un employé...">
+                </div>
+                <div id="employesList" class="employes-list">
+                    <!-- Liste générée dynamiquement -->
+                </div>
+            </div>
+
+            <!-- Modal détails employé -->
+            <div id="employeModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h3 id="modalTitle">Détails de l'Employé</h3>
+                    
+                    <div class="modal-body">
+                        <div class="employe-info">
+                            <div class="info-item">
+                                <label>Nom complet:</label>
+                                <span id="modalNomComplet"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>Email:</label>
+                                <span id="modalEmail"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>Shift:</label>
+                                <span id="modalShift"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>Statut:</label>
+                                <span id="modalStatut"></span>
+                            </div>
+                        </div>
+
+                        <div class="modal-actions">
+                            <button id="btnConges" class="btn-conges">Gérer les Congés</button>
+                            <button id="btnHoraires" class="btn-horaires">Voir les Horaires</button>
+                            <button id="btnSupprimer" class="btn-supprimer">Supprimer l'Employé</button>
+                        </div>
+
+                        <!-- Section selfies récents -->
+                        <div class="selfies-section">
+                            <h4>Selfies Récents</h4>
+                            <div id="selfiesList" class="selfies-list">
+                                <!-- Selfies générés dynamiquement -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal congés -->
+            <div id="congesModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h3>Gestion des Congés</h3>
+                    
+                    <div class="modal-body">
+                        <div class="employe-info">
+                            <h4 id="congesEmployeName"></h4>
+                            <p>Congés actuels: <span id="currentConges">0</span> jours</p>
+                        </div>
+
+                        <form id="addCongeForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="congeDateDebut">Date début:</label>
+                                    <input type="date" id="congeDateDebut" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="congeDateFin">Date fin:</label>
+                                    <input type="date" id="congeDateFin" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="congeMotif">Motif:</label>
+                                <select id="congeMotif">
+                                    <option value="conges payes">Congés Payés</option>
+                                    <option value="maladie">Maladie</option>
+                                    <option value="personnel">Raisons Personnelles</option>
+                                    <option value="formation">Formation</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn-add-conge">Ajouter le Congé</button>
+                        </form>
+
+                        <div class="conges-list">
+                            <h4>Congés Programmes</h4>
+                            <div id="listeConges">
+                                <!-- Liste des congés -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal horaires -->
+            <div id="horairesModal" class="modal">
+                <div class="modal-content large">
+                    <span class="close">&times;</span>
+                    <h3>Historique des Horaires</h3>
+                    
+                    <div class="modal-body">
+                        <div class="filters">
+                            <select id="filterPeriode">
+                                <option value="today">Aujourd'hui</option>
+                                <option value="week">Cette semaine</option>
+                                <option value="month">Ce mois</option>
+                                <option value="all">Tout</option>
+                            </select>
+                            <input type="date" id="filterDateStart">
+                            <input type="date" id="filterDateEnd">
+                            <button id="applyFilters" class="btn-filter">Filtrer</button>
+                        </div>
+
+                        <div class="statistiques">
+                            <div class="stat-item">
+                                <span class="stat-label">Heures travaillées:</span>
+                                <span id="totalHeures" class="stat-value">0h</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Pointages:</span>
+                                <span id="totalPointages" class="stat-value">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Retards:</span>
+                                <span id="totalRetards" class="stat-value">0</span>
+                            </div>
+                        </div>
+
+                        <div id="horairesList" class="horaires-list">
+                            <!-- Horaires générés dynamiquement -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase } from './config.js';
+
+        class AdminPage {
+            constructor() {
+                this.currentAdmin = null;
+                this.selectedEmploye = null;
+                this.initialize();
+            }
+
+            initialize() {
+                this.checkAuthentication();
+                this.initializeElements();
+                this.initializeEventListeners();
+                this.loadEmployes();
+            }
+
+            checkAuthentication() {
+                const userType = localStorage.getItem('userType');
+                const userData = localStorage.getItem('currentUser');
+                
+                if (userType !== 'admin' || !userData) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                this.currentAdmin = JSON.parse(userData);
+                document.getElementById('adminName').textContent = this.currentAdmin.email;
+            }
+
+            initializeElements() {
+                this.elements = {
+                    logoutBtn: document.getElementById('logoutBtn'),
+                    addEmployeForm: document.getElementById('addEmployeForm'),
+                    employesList: document.getElementById('employesList'),
+                    searchEmploye: document.getElementById('searchEmploye'),
+                    employeModal: document.getElementById('employeModal'),
+                    congesModal: document.getElementById('congesModal'),
+                    horairesModal: document.getElementById('horairesModal'),
+                    // Modal éléments
+                    modalTitle: document.getElementById('modalTitle'),
+                    modalNomComplet: document.getElementById('modalNomComplet'),
+                    modalEmail: document.getElementById('modalEmail'),
+                    modalShift: document.getElementById('modalShift'),
+                    modalStatut: document.getElementById('modalStatut'),
+                    selfiesList: document.getElementById('selfiesList'),
+                    btnConges: document.getElementById('btnConges'),
+                    btnHoraires: document.getElementById('btnHoraires'),
+                    btnSupprimer: document.getElementById('btnSupprimer'),
+                    congesEmployeName: document.getElementById('congesEmployeName'),
+                    currentConges: document.getElementById('currentConges'),
+                    addCongeForm: document.getElementById('addCongeForm'),
+                    listeConges: document.getElementById('listeConges'),
+                    filterPeriode: document.getElementById('filterPeriode'),
+                    filterDateStart: document.getElementById('filterDateStart'),
+                    filterDateEnd: document.getElementById('filterDateEnd'),
+                    applyFilters: document.getElementById('applyFilters'),
+                    totalHeures: document.getElementById('totalHeures'),
+                    totalPointages: document.getElementById('totalPointages'),
+                    totalRetards: document.getElementById('totalRetards'),
+                    horairesList: document.getElementById('horairesList'),
+                    // Closes
+                    closeButtons: document.querySelectorAll('.close')
+                };
+            }
+
+            initializeEventListeners() {
+                this.elements.logoutBtn.addEventListener('click', () => this.logout());
+                this.elements.addEmployeForm.addEventListener('submit', (e) => this.addEmploye(e));
+                this.elements.searchEmploye.addEventListener('input', (e) => this.searchEmployes(e.target.value));
+                this.elements.btnConges.addEventListener('click', () => this.openCongesModal());
+                this.elements.btnHoraires.addEventListener('click', () => this.openHorairesModal());
+                this.elements.btnSupprimer.addEventListener('click', () => this.deleteEmploye());
+                this.elements.addCongeForm.addEventListener('submit', (e) => this.addConge(e));
+                this.elements.applyFilters.addEventListener('click', () => this.applyFilters());
+                this.elements.filterPeriode.addEventListener('change', () => this.applyFilters());
+                
+                this.elements.closeButtons.forEach(btn => btn.addEventListener('click', () => this.closeModal()));
+                window.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('modal')) {
+                        this.closeModal();
+                    }
+                });
+                
+                document.getElementById('employeShift').addEventListener('change', (e) => this.toggleCustomShift(e.target.value));
+            }
+
+            toggleCustomShift(value) {
+                const customGroup1 = document.getElementById('customShiftGroup');
+                const customGroup2 = document.getElementById('customShiftGroup2');
+                if (value === 'personnalise') {
+                    customGroup1.style.display = 'block';
+                    customGroup2.style.display = 'block';
+                } else {
+                    customGroup1.style.display = 'none';
+                    customGroup2.style.display = 'none';
+                }
+            }
+
+            async logout() {
+                const { error } = await supabase.auth.signOut();
+                if (error) console.error('Erreur logout:', error);
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('userType');
+                window.location.href = 'index.html';
+            }
+
+            async loadEmployes() {
+                const { data: employes, error } = await supabase
+                    .from('employes')
+                    .select('*');
+
+                if (error) {
+                    console.error('Erreur load employes:', error);
+                    return;
+                }
+                this.renderEmployesList(employes || []);
+            }
+
+            renderEmployesList(employes) {
+                this.elements.employesList.innerHTML = employes.map(emp => `
+                    <div class="employe-card" data-id="${emp.id}">
+                        <div class="employe-info-card">
+                            <div class="employe-name">${emp.prenom} ${emp.nom}</div>
+                            <div class="employe-details">${emp.email}</div>
+                        </div>
+                        <span class="employe-status status-active">Actif</span>
+                    </div>
+                `).join('');
+                
+                // Ajouter event listeners pour ouverture modal
+                document.querySelectorAll('.employe-card').forEach(card => {
+                    card.addEventListener('click', () => this.openEmployeModal(card.dataset.id));
+                });
+            }
+
+            searchEmployes(query) {
+                // Pour la recherche, on peut utiliser une requête Supabase avec like, mais pour simplicité, on charge tout et filtre côté client
+                this.loadEmployes().then(() => {
+                    let employes = Array.from(this.elements.employesList.querySelectorAll('.employe-card'));
+                    const filtered = employes.filter(card => 
+                        card.textContent.toLowerCase().includes(query.toLowerCase())
+                    );
+                    filtered.forEach(f => f.style.display = 'flex');
+                    employes.forEach(e => { if (!filtered.includes(e)) e.style.display = 'none'; });
+                });
+            }
+
+            async openEmployeModal(id) {
+                const { data: employe } = await supabase
+                    .from('employes')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+
+                this.selectedEmploye = employe;
+                if (!this.selectedEmploye) return;
+                
+                this.elements.modalTitle.textContent = `Détails: ${this.selectedEmploye.prenom} ${this.selectedEmploye.nom}`;
+                this.elements.modalNomComplet.textContent = `${this.selectedEmploye.prenom} ${this.selectedEmploye.nom}`;
+                this.elements.modalEmail.textContent = this.selectedEmploye.email;
+                this.elements.modalShift.textContent = this.selectedEmploye.shift || 'Non défini';
+                this.elements.modalStatut.textContent = 'Actif'; // À adapter avec congés
+                
+                await this.loadSelfiesForEmploye();
+                this.elements.employeModal.style.display = 'block';
+            }
+
+            async loadSelfiesForEmploye() {
+                const { data: selfiesData, error } = await supabase
+                    .from('selfies')
+                    .select('*')
+                    .eq('user_id', this.selectedEmploye.id)
+                    .order('timestamp', { ascending: false })
+                    .limit(6);
+
+                if (error) {
+                    console.error('Erreur load selfies:', error);
+                    return;
+                }
+
+                // Récupérer URLs publiques depuis storage
+                const selfies = await Promise.all(selfiesData.map(async (s) => {
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('selfies')
+                        .getPublicUrl(s.file_path);
+                    return { ...s, url: publicUrl };
+                }));
+
+                this.elements.selfiesList.innerHTML = selfies.map(selfie => {
+                    const date = new Date(selfie.timestamp);
+                    return `
+                        <div class="selfie-item">
+                            <img src="${selfie.url}" alt="Selfie" class="selfie-img">
+                            <div class="selfie-time">${date.toLocaleString('fr-FR')}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            openCongesModal() {
+                this.elements.congesEmployeName.textContent = `${this.selectedEmploye.prenom} ${this.selectedEmploye.nom}`;
+                // Calculer congés actuels (simulation)
+                this.elements.currentConges.textContent = '5'; // À implémenter avec requête
+                this.loadCongesForEmploye();
+                this.elements.employeModal.style.display = 'none';
+                this.elements.congesModal.style.display = 'block';
+            }
+
+            async loadCongesForEmploye() {
+                const { data: conges, error } = await supabase
+                    .from('conges')
+                    .select('*')
+                    .eq('user_id', this.selectedEmploye.id);
+                
+                if (error) {
+                    console.error('Erreur load conges:', error);
+                    return;
+                }
+                
+                this.elements.listeConges.innerHTML = conges.map(conge => `
+                    <div class="conge-item">
+                        <div>
+                            <div class="conge-dates">${new Date(conge.date_debut).toLocaleDateString()} - ${new Date(conge.date_fin).toLocaleDateString()}</div>
+                            <div class="conge-motif">${conge.motif}</div>
+                        </div>
+                        <button class="btn-supprimer" onclick="adminPage.deleteConge(${conge.id})">Supprimer</button>
+                    </div>
+                `).join('');
+            }
+
+            async addConge(e) {
+                e.preventDefault();
+                const dateDebut = document.getElementById('congeDateDebut').value;
+                const dateFin = document.getElementById('congeDateFin').value;
+                const motif = document.getElementById('congeMotif').value;
+                
+                const conge = {
+                    user_id: this.selectedEmploye.id,
+                    date_debut: dateDebut,
+                    date_fin: dateFin,
+                    motif
+                };
+                
+                const { error } = await supabase
+                    .from('conges')
+                    .insert([conge]);
+
+                if (error) {
+                    console.error('Erreur add conge:', error);
+                    alert('Erreur ajout congé.');
+                    return;
+                }
+                
+                this.loadCongesForEmploye();
+                alert('Congé ajouté !');
+            }
+
+            async deleteConge(id) {
+                const { error } = await supabase
+                    .from('conges')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) {
+                    console.error('Erreur delete conge:', error);
+                    return;
+                }
+                this.loadCongesForEmploye();
+            }
+
+            openHorairesModal() {
+                this.elements.employeModal.style.display = 'none';
+                this.elements.horairesModal.style.display = 'block';
+                this.applyFilters();
+            }
+
+            async applyFilters() {
+                let pointagesQuery = supabase
+                    .from('pointages')
+                    .select('*')
+                    .eq('user_id', this.selectedEmploye.id);
+
+                const periode = this.elements.filterPeriode.value;
+                
+                if (periode === 'today') {
+                    const today = new Date().toISOString().split('T')[0];
+                    pointagesQuery = pointagesQuery.gte('timestamp', `${today}T00:00:00Z`).lte('timestamp', `${today}T23:59:59Z`);
+                } else if (periode === 'week') {
+                    const weekAgo = new Date();
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    pointagesQuery = pointagesQuery.gte('timestamp', weekAgo.toISOString());
+                } else if (periode === 'month') {
+                    const monthAgo = new Date();
+                    monthAgo.setMonth(monthAgo.getMonth() - 1);
+                    pointagesQuery = pointagesQuery.gte('timestamp', monthAgo.toISOString());
+                }
+                
+                // Dates custom
+                const start = this.elements.filterDateStart.value;
+                const end = this.elements.filterDateEnd.value;
+                if (start && end) {
+                    pointagesQuery = pointagesQuery.gte('timestamp', new Date(start).toISOString()).lte('timestamp', new Date(end).toISOString());
+                }
+                
+                const { data: pointages, error } = await pointagesQuery.order('timestamp', { ascending: true });
+                
+                if (error) {
+                    console.error('Erreur apply filters:', error);
+                    return;
+                }
+                
+                this.renderHorairesList(pointages || []);
+                this.updateStats(pointages || []);
+            }
+
+            renderHorairesList(pointages) {
+                this.elements.horairesList.innerHTML = pointages.map(item => {
+                    const date = new Date(item.timestamp);
+                    const className = item.type === 'sortie' ? 'horaire-item normal' : 'horaire-item normal'; // À adapter pour retards
+                    return `
+                        <div class="${className}">
+                            <div>
+                                <div class="horaire-time">${date.toLocaleTimeString('fr-FR')}</div>
+                                <div class="horaire-type">${item.type}</div>
+                            </div>
+                            <span>${date.toLocaleDateString('fr-FR')}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            updateStats(pointages) {
+                this.elements.totalPointages.textContent = pointages.length;
+                // Calcul heures (simulation - à implémenter avec logique réelle)
+                this.elements.totalHeures.textContent = '8h'; 
+                this.elements.totalRetards.textContent = '0'; // À implémenter
+            }
+
+            closeModal() {
+                this.elements.employeModal.style.display = 'none';
+                this.elements.congesModal.style.display = 'none';
+                this.elements.horairesModal.style.display = 'none';
+            }
+
+            async addEmploye(e) {
+                e.preventDefault();
+                const nom = document.getElementById('employeNom').value;
+                const prenom = document.getElementById('employePrenom').value;
+                const email = document.getElementById('employeEmail').value;
+                const shift = document.getElementById('employeShift').value;
+                let heureDebut = '', heureFin = '';
+                if (shift === 'personnalise') {
+                    heureDebut = document.getElementById('customHeureDebut').value;
+                    heureFin = document.getElementById('customHeureFin').value;
+                }
+                
+                // 1. Envoyer invitation email (magic link ou password reset)
+                const { data, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email, {
+                    redirectTo: window.location.origin + '/employe.html'  // URL après clic lien (adapte à ton domaine)
+                });
+                
+                if (inviteError) {
+                    console.error('Erreur invitation:', inviteError);
+                    alert('Erreur envoi invitation.');
+                    return;
+                }
+                
+                // 2. Mettre à jour employes après signup (trigger auto insère base, on update détails)
+                // Attendre un peu pour que trigger s'exécute, ou query par email
+                setTimeout(async () => {
+                    const { data: newUser } = await supabase.auth.admin.getUserByEmail(email);
+                    if (newUser.user) {
+                        const { error: updateError } = await supabase
+                            .from('employes')
+                            .update({ nom, prenom, shift: shift === 'personnalise' ? `${heureDebut}-${heureFin}` : shift, invited_by: this.currentAdmin.id })
+                            .eq('id', newUser.user.id);
+                        
+                        if (updateError) {
+                            console.error('Erreur update employé:', updateError);
+                        } else {
+                            alert(`Invitation envoyée à ${email} ! Il cliquera le lien pour set password.`);
+                            this.elements.addEmployeForm.reset();
+                            this.loadEmployes();
+                        }
+                    }
+                }, 2000);  // Délai pour trigger
+            }
+
+            async deleteEmploye() {
+                if (confirm('Supprimer cet employé ?')) {
+                    // Supprimer de auth.users d'abord (cascade supprime employes/pointages etc.)
+                    const { error: authError } = await supabase.auth.admin.deleteUser(this.selectedEmploye.id);
+                    
+                    if (authError) {
+                        console.error('Erreur delete auth:', authError);
+                        return;
+                    }
+                    
+                    this.closeModal();
+                    this.loadEmployes();
+                }
+            }
+        }
+
+        // Initialiser
+        const adminPage = new AdminPage();
+    </script>
+</body>
+</html>
