@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace Employé - Gestion des Horaires</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-logout {
+            padding: 8px 16px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: #c82333;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .auto-pointage-section, .selfie-section, .history-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Étapes du processus automatique (simplifié sans selfie) */
+        .status-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .status-container::before {
+            content: '';
+            position: absolute;
+            top: 25px;
+            left: 50px;
+            right: 50px;
+            height: 3px;
+            background: #e0e0e0;
+            z-index: 1;
+        }
+
+        .status-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            flex: 1;
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .step-info {
+            text-align: center;
+        }
+
+        .step-info h4 {
+            margin-bottom: 5px;
+            color: #666;
+        }
+
+        .step-info p {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .status-step.active .step-number {
+            background: #2699e7;
+            color: white;
+        }
+
+        .status-step.active .step-info h4 {
+            color: #2699e7;
+        }
+
+        .status-step.completed .step-number {
+            background: #28a745;
+            color: white;
+        }
+
+        /* Caméra pour QR */
+        .camera-container {
+            position: relative;
+            margin: 20px auto;
+            max-width: 400px;
+        }
+
+        .camera-view {
+            position: relative;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .scan-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.4);
+            color: white;
+        }
+
+        .scan-frame {
+            width: 250px;
+            height: 250px;
+            border: 3px solid #2699e7;
+            border-radius: 10px;
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #2699e7;
+            animation: scanLine 2s infinite;
+        }
+
+        @keyframes scanLine {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+
+        /* Contrôles automatiques */
+        .auto-controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .btn-start, .btn-stop {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-start {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-start:hover {
+            background: #218838;
+        }
+
+        .btn-stop {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-stop:hover {
+            background: #c82333;
+        }
+
+        /* Selfie section */
+        .selfie-controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .btn-selfie {
+            padding: 15px 30px;
+            background: #17a2b8;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-selfie:hover {
+            background: #138496;
+        }
+
+        .selfie-preview {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .selfie-preview img {
+            max-width: 200px;
+            height: auto;
+            border-radius: 10px;
+            margin-top: 15px;
+            border: 2px solid #17a2b8;
+        }
+
+        /* Résultats automatiques */
+        .auto-result {
+            margin-top: 20px;
+        }
+
+        .result-card {
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #28a745;
+        }
+
+        .pointage-details {
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+        }
+
+        /* Historique */
+        .pointage-history {
+            display: grid;
+            gap: 10px;
+        }
+
+        .pointage-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
+        }
+
+        .pointage-item.sortie {
+            border-left-color: #dc3545;
+        }
+
+        .pointage-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pointage-time {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .pointage-type {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .status-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .status-container::before {
+                display: none;
+            }
+            
+            .camera-container {
+                max-width: 100%;
+            }
+            
+            .scan-frame {
+                width: 200px;
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Espace Employé</h1>
+            <div class="user-info">
+                <span id="userName"></span>
+                <button id="logoutBtn" class="btn-logout">Déconnexion</button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Section d'information -->
+            <div class="info-section">
+                <div class="current-time">
+                    <h3 id="currentDateTime"></h3>
+                </div>
+                <div class="last-pointeuse">
+                    <h4>Dernier pointage</h4>
+                    <p id="lastPointeuse">Aucun pointage aujourd'hui</p>
+                </div>
+            </div>
+
+            <!-- Section pointage automatique (seulement QR) -->
+            <div class="auto-pointage-section">
+                <h2>Pointage Automatique (Scan QR)</h2>
+                <div class="status-container">
+                    <div class="status-step" id="step1">
+                        <div class="step-number">1</div>
+                        <div class="step-info">
+                            <h4>Scan QR Code</h4>
+                            <p>En attente du scan...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="status-step" id="step2">
+                        <div class="step-number">2</div>
+                        <div class="step-info">
+                            <h4>Confirmation</h4>
+                            <p>Pointage enregistré automatiquement</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="camera-container">
+                    <!-- Vue caméra pour scan QR -->
+                    <div id="cameraView" class="camera-view">
+                        <video id="cameraVideo" width="400" height="300" playsinline autoplay></video>
+                        <canvas id="cameraCanvas" class="hidden"></canvas>
+                        
+                        <div class="scan-indicator">
+                            <div class="scan-frame">
+                                <div class="scan-line"></div>
+                            </div>
+                            <p>Approchez le QR code pour scanner automatiquement</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="auto-controls">
+                    <button id="startAutoProcess" class="btn-start">Démarrer le Scan QR</button>
+                    <button id="stopAutoProcess" class="btn-stop hidden">Arrêter le Scan</button>
+                </div>
+
+                <div id="autoResult" class="auto-result hidden">
+                    <div class="result-card">
+                        <h3 id="autoResultTitle"></h3>
+                        <p id="autoResultMessage"></p>
+                        <div id="autoPointageDetails" class="pointage-details"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Selfie séparée -->
+            <div class="selfie-section">
+                <h2>Vérification Selfie</h2>
+                <p>Prenez un selfie pour vérification (optionnel, visible par l'admin)</p>
+                <div class="selfie-controls">
+                    <button id="startSelfie" class="btn-selfie">Prendre Selfie</button>
+                </div>
+                <div id="selfiePreview" class="selfie-preview hidden">
+                    <h4>Selfie enregistré</h4>
+                    <img id="selfieImage" src="" alt="Selfie">
+                </div>
+            </div>
+
+            <!-- Historique des pointages -->
+            <div class="history-section">
+                <h2>Historique du jour</h2>
+                <div id="pointageHistory" class="pointage-history">
+                    <!-- Les pointages seront ajoutés ici dynamiquement -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <script type="module">
+        import { supabase } from './config.js';
+
+        class EmployePage {
+            constructor() {
+                this.currentUser = null;
+                this.cameraStream = null;
+                this.isProcessRunning = false;
+                this.initialize();
+            }
+
+            initialize() {
+                this.checkAuthentication();
+                this.initializeElements();
+                this.initializeEventListeners();
+                this.updateDateTime();
+                this.loadTodayHistory();
+            }
+
+            checkAuthentication() {
+                const userType = localStorage.getItem('userType');
+                const userData = localStorage.getItem('currentUser');
+                
+                if (userType !== 'employe' || !userData) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                this.currentUser = JSON.parse(userData);
+                // Récup nom/prénom depuis table employes si pas dans user
+                this.loadUserDetails();
+            }
+
+            async loadUserDetails() {
+                const { data: employe } = await supabase
+                    .from('employes')
+                    .select('nom, prenom')
+                    .eq('id', this.currentUser.id)
+                    .single();
+                
+                if (employe) {
+                    this.currentUser.nom = employe.nom;
+                    this.currentUser.prenom = employe.prenom;
+                }
+                
+                document.getElementById('userName').textContent = 
+                    `${this.currentUser.prenom} ${this.currentUser.nom}`;
+            }
+
+            initializeElements() {
+                this.elements = {
+                    logoutBtn: document.getElementById('logoutBtn'),
+                    currentDateTime: document.getElementById('currentDateTime'),
+                    lastPointeuse: document.getElementById('lastPointeuse'),
+                    pointageHistory: document.getElementById('pointageHistory'),
+                    startAutoProcess: document.getElementById('startAutoProcess'),
+                    stopAutoProcess: document.getElementById('stopAutoProcess'),
+                    cameraVideo: document.getElementById('cameraVideo'),
+                    cameraCanvas: document.getElementById('cameraCanvas'),
+                    autoResult: document.getElementById('autoResult'),
+                    autoResultTitle: document.getElementById('autoResultTitle'),
+                    autoResultMessage: document.getElementById('autoResultMessage'),
+                    autoPointageDetails: document.getElementById('autoPointageDetails'),
+                    step1: document.getElementById('step1'),
+                    step2: document.getElementById('step2'),
+                    startSelfie: document.getElementById('startSelfie'),
+                    selfiePreview: document.getElementById('selfiePreview'),
+                    selfieImage: document.getElementById('selfieImage')
+                };
+            }
+
+            initializeEventListeners() {
+                this.elements.logoutBtn.addEventListener('click', () => this.logout());
+                this.elements.startAutoProcess.addEventListener('click', () => this.startAutoProcess());
+                this.elements.stopAutoProcess.addEventListener('click', () => this.stopAutoProcess());
+                this.elements.startSelfie.addEventListener('click', () => this.startSelfieCapture());
+            }
+
+            updateDateTime() {
+                const now = new Date();
+                const options = { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                };
+                this.elements.currentDateTime.textContent = now.toLocaleDateString('fr-FR', options);
+                setTimeout(() => this.updateDateTime(), 1000);
+            }
+
+            async logout() {
+                const { error } = await supabase.auth.signOut();
+                if (error) console.error('Erreur logout:', error);
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('userType');
+                window.location.href = 'index.html';
+            }
+
+            async startAutoProcess() {
+                try {
+                    this.isProcessRunning = true;
+                    this.elements.startAutoProcess.classList.add('hidden');
+                    this.elements.stopAutoProcess.classList.remove('hidden');
+                    
+                    this.cameraStream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { facingMode: "environment" } 
+                    });
+                    
+                    this.elements.cameraVideo.srcObject = this.cameraStream;
+                    this.elements.cameraVideo.play();
+                    this.updateStep(1, 'active');
+                    this.startQRDetection();
+                    
+                } catch (error) {
+                    console.error('Erreur caméra:', error);
+                    alert('Impossible d\'accéder à la caméra. Vérifiez les permissions.');
+                    this.stopAutoProcess();
+                }
+            }
+
+            stopAutoProcess() {
+                this.isProcessRunning = false;
+                
+                if (this.cameraStream) {
+                    this.cameraStream.getTracks().forEach(track => track.stop());
+                    this.cameraStream = null;
+                }
+                
+                this.elements.startAutoProcess.classList.remove('hidden');
+                this.elements.stopAutoProcess.classList.add('hidden');
+                this.elements.autoResult.classList.add('hidden');
+                
+                this.resetSteps();
+            }
+
+            updateStep(stepNumber, status) {
+                const step = this.elements[`step${stepNumber}`];
+                step.className = `status-step ${status}`;
+            }
+
+            resetSteps() {
+                this.updateStep(1, '');
+                this.updateStep(2, '');
+            }
+
+            startQRDetection() {
+                if (!this.isProcessRunning || !this.cameraStream) return;
+
+                const video = this.elements.cameraVideo;
+                const canvas = this.elements.cameraCanvas;
+                const context = canvas.getContext('2d');
+
+                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                    if (code) {
+                        console.log('QR Code détecté:', code.data);
+                        this.qrData = code.data.toLowerCase(); // 'entree' ou 'sortie'
+                        this.handleQRCodeDetected();
+                        return;
+                    }
+                }
+
+                requestAnimationFrame(() => this.startQRDetection());
+            }
+
+            async handleQRCodeDetected() {
+                this.updateStep(1, 'completed');
+                this.updateStep(2, 'active');
+        
