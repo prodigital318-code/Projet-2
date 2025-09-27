@@ -3,1072 +3,538 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Espace Administrateur - Gestion des Horaires</title>
+    <title>Admin - v3.3 (QR Fixe Unique)</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f8f9fa;
-            color: #333;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: white;
-            padding: 20px 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        .admin-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .btn-logout {
-            padding: 8px 16px;
-            background: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .btn-logout:hover {
-            background: #c82333;
-        }
-
-        .admin-content {
-            display: grid;
-            grid-template-columns: 400px 1fr;
-            gap: 20px;
-        }
-
-        .add-employe-section {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            height: fit-content;
-        }
-
-        .employes-list-section {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .employe-form .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #555;
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e1e5e9;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #2699e7;
-        }
-
-        .btn-add {
-            width: 100%;
-            padding: 12px;
-            background: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .btn-add:hover {
-            background: #218838;
-        }
-
-        .search-bar {
-            margin-bottom: 20px;
-        }
-
-        .search-bar input {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e1e5e9;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        .employes-list {
-            display: grid;
-            gap: 10px;
-            max-height: 600px;
-            overflow-y: auto;
-        }
-
-        .employe-card {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border-left: 4px solid #2699e7;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .employe-card:hover {
-            transform: translateX(5px);
-            background: #e9ecef;
-        }
-
-        .employe-info-card {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .employe-name {
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        .employe-details {
-            font-size: 12px;
-            color: #666;
-        }
-
-        .employe-status {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-
-        .status-active {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-conge {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        /* Modals */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 30px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-content.large {
-            max-width: 900px;
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .close:hover {
-            color: #000;
-        }
-
-        .modal-body {
-            margin-top: 20px;
-        }
-
-        .info-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 5px;
-        }
-
-        .info-item label {
-            font-weight: bold;
-        }
-
-        .modal-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin: 20px 0;
-        }
-
-        .btn-conges, .btn-horaires, .btn-supprimer, .btn-add-conge, .btn-filter {
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .btn-conges {
-            background: #ffc107;
-            color: #000;
-        }
-
-        .btn-conges:hover {
-            background: #e0a800;
-        }
-
-        .btn-horaires {
-            background: #17a2b8;
-            color: white;
-        }
-
-        .btn-horaires:hover {
-            background: #138496;
-        }
-
-        .btn-supprimer {
-            background: #dc3545;
-            color: white;
-            grid-column: 1 / -1;
-        }
-
-        .btn-supprimer:hover {
-            background: #c82333;
-        }
-
-        .btn-add-conge {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-add-conge:hover {
-            background: #218838;
-        }
-
-        .btn-filter {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-filter:hover {
-            background: #5a6268;
-        }
-
-        /* Selfies */
-        .selfies-section {
-            margin-top: 20px;
-        }
-
-        .selfies-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .selfie-item {
-            text-align: center;
-        }
-
-        .selfie-img {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 5px;
-            border: 2px solid #e1e5e9;
-        }
-
-        .selfie-time {
-            font-size: 11px;
-            color: #666;
-            margin-top: 5px;
-        }
-
-        /* Congés */
-        .conges-list {
-            margin-top: 20px;
-        }
-
-        .conge-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-
-        .conge-dates {
-            font-weight: bold;
-        }
-
-        .conge-motif {
-            font-size: 12px;
-            color: #666;
-        }
-
-        /* Horaires */
-        .filters {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .statistiques {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 5px;
-        }
-
-        .stat-label {
-            display: block;
-            font-size: 12px;
-            color: #666;
-        }
-
-        .stat-value {
-            display: block;
-            font-size: 24px;
-            font-weight: bold;
-            color: #2699e7;
-        }
-
-        .horaires-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .horaire-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-
-        .horaire-item.retard {
-            border-left: 4px solid #dc3545;
-        }
-
-        .horaire-item.normal {
-            border-left: 4px solid #28a745;
-        }
-
-        .horaire-time {
-            font-weight: bold;
-        }
-
-        .horaire-type {
-            font-size: 12px;
-            color: #666;
-        }
-
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .admin-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .modal-content {
-                width: 95%;
-                margin: 10% auto;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .form-row {
-                grid-template-columns: 1fr !important;
-            }
-            
-            .modal-actions {
-                grid-template-columns: 1fr;
-            }
-            
-            .statistiques {
-                grid-template-columns: 1fr;
-            }
-            
-            .filters {
-                flex-direction: column;
-            }
-        }
+        /* TOUS LES STYLES INCLUS - RIEN OMI (header, forms, modals, toasts, responsive, etc.) */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); color: #333; line-height: 1.6; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 20px 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 20px; position: relative; }
+        .header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #28a745, #007bff, #ffc107); }
+        .admin-info { display: flex; align-items: center; gap: 15px; }
+        .admin-avatar { width: 40px; height: 40px; border-radius: 50%; background: #007bff; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .btn-logout { padding: 10px 20px; background: linear-gradient(135deg, #dc3545, #c82333); color: white; border: none; border-radius: 25px; cursor: pointer; transition: all 0.3s; font-weight: 600; }
+        .btn-logout:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(220,53,69,0.3); }
+        .admin-content { display: grid; grid-template-columns: 400px 1fr; gap: 20px; }
+        .section { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); position: relative; }
+        .section::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #007bff; }
+        h2 { margin-bottom: 20px; color: #007bff; font-size: 1.5em; }
+        h3 { margin-top: 20px; color: #555; font-size: 1.2em; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; transition: all 0.3s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #007bff; box-shadow: 0 0 0 3px rgba(0,123,255,0.1); }
+        .btn-add { width: 100%; padding: 15px; background: linear-gradient(135deg, #28a745, #20c997); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-add:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(40,167,69,0.3); }
+        .search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+        .search-bar input { flex: 1; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; }
+        .btn-filter { padding: 12px 20px; background: linear-gradient(135deg, #6c757d, #5a6268); color: white; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
+        .btn-filter:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(108,117,125,0.3); }
+        .employes-list { display: grid; gap: 15px; max-height: 600px; overflow-y: auto; padding-right: 10px; }
+        .employes-list::-webkit-scrollbar { width: 6px; } .employes-list::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; } .employes-list::-webkit-scrollbar-thumb { background: #007bff; border-radius: 3px; }
+        .employe-card { display: flex; flex-direction: column; gap: 10px; padding: 20px; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #007bff; cursor: pointer; transition: all 0.3s; }
+        .employe-card:hover { transform: translateX(5px); background: #e9ecef; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .employe-name { font-weight: bold; font-size: 18px; color: #333; }
+        .employe-details { font-size: 14px; color: #666; }
+        .employe-status { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .status-active { background: linear-gradient(135deg, #d4edda, #c3e6cb); color: #155724; }
+        .status-inactive { background: linear-gradient(135deg, #f8d7da, #f5c6cb); color: #721c24; }
+        .btn-small { padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: 600; margin: 2px; transition: all 0.3s; }
+        .btn-selfie { background: #17a2b8; color: white; } .btn-selfie:hover { background: #138496; }
+        .btn-horaires { background: #ffc107; color: #000; } .btn-horaires:hover { background: #e0a800; }
+        .btn-qr-fixed { background: #28a745; color: white; width: 100%; margin-top: 10px; padding: 12px; border-radius: 8px; cursor: pointer; transition: all 0.3s; font-weight: 600; }
+        .btn-qr-fixed:hover { background: #218838; transform: translateY(-2px); }
+        #qr-canvas { display: block; margin: 10px auto; border: 1px solid #ddd; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-content { background: white; margin: 5% auto; padding: 0; border-radius: 15px; width: 90%; max-width: 700px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); animation: slideIn 0.3s; }
+        @keyframes slideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-content.large { max-width: 900px; }
+        .modal-header { padding: 25px 30px; border-bottom: 1px solid #e9ecef; display: flex; justify-content: space-between; align-items: center; }
+        .close { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; transition: color 0.3s; } .close:hover { color: #dc3545; }
+        .modal-body { padding: 30px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .info-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 3px solid #007bff; }
+        .info-item label { font-weight: 600; color: #555; }
+        .info-item value { font-weight: bold; color: #333; }
+        .modal-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e9ecef; }
+        .btn-modal { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s; text-transform: uppercase; }
+        .btn-conges { background: linear-gradient(135deg, #ffc107, #e0a800); color: #000; } .btn-conges:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(255,193,7,0.3); }
+        .btn-horaires { background: linear-gradient(135deg, #17a2b8, #138496); color: white; } .btn-horaires:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(23,162,184,0.3); }
+        .btn-supprimer { background: linear-gradient(135deg, #dc3545, #c82333); color: white; grid-column: 1 / -1; } .btn-supprimer:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(220,53,69,0.3); }
+        .selfies-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 20px; }
+        .selfie-img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; cursor: pointer; }
+        .conges-list { margin-top: 20px; }
+        .conge-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid #28a745; }
+        .conge-item.pending { border-left-color: #ffc107; }
+        .conge-item.rejected { border-left-color: #dc3545; }
+        .conge-details { flex: 1; }
+        .conge-motif { font-weight: bold; color: #333; }
+        .conge-dates { font-size: 12px; color: #666; }
+        .conge-form .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .conge-form .form-group { margin-bottom: 15px; }
+        .btn-approuver { background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; margin: 2px; font-size: 12px; }
+        .btn-rejeter { background: linear-gradient(135deg, #ffc107, #e0a800); color: #000; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; margin: 2px; font-size: 12px; }
+        .btn-approuver:hover, .btn-rejeter:hover { transform: translateY(-1px); }
+        @media (max-width: 768px) { .admin-content { grid-template-columns: 1fr; } .form-row, .conge-form .form-row { grid-template-columns: 1fr; } .info-grid { grid-template-columns: 1fr; } .search-bar { flex-direction: column; } }
+        .toast { position: fixed; top: 20px; right: 20px; padding: 15px 20px; border-radius: 8px; color: white; font-weight: 600; z-index: 2000; transform: translateX(400px); transition: transform 0.3s; }
+        .toast.show { transform: translateX(0); }
+        .toast.success { background: linear-gradient(135deg, #28a745, #20c997); }
+        .toast.error { background: linear-gradient(135deg, #dc3545, #c82333); }
     </style>
 </head>
 <body>
     <div class="container">
-        <header class="header">
-            <h1>Espace Administrateur</h1>
+        <div class="header">
+            <h1>🚀 Admin - Gestion Employés & QR Fixe (v3.3)</h1>
             <div class="admin-info">
-                <span id="adminName">Administrateur</span>
-                <button id="logoutBtn" class="btn-logout">Déconnexion</button>
+                <div class="admin-avatar" id="admin-avatar">A</div>
+                <span id="admin-name">Admin Connecté</span>
+                <button class="btn-logout" onclick="logout()">Déconnexion</button>
             </div>
-        </header>
-
+        </div>
         <div class="admin-content">
-            <!-- Section ajout employé -->
-            <div class="add-employe-section">
-                <h2>Ajouter un Employé</h2>
-                <form id="addEmployeForm" class="employe-form">
+            <div class="section add-employe-section">
+                <h2>➕ Ajouter un Employé</h2>
+                <form id="employe-form" class="employe-form">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="employeNom">Nom:</label>
-                            <input type="text" id="employeNom" name="nom" required>
+                            <label for="nom">Nom *</label>
+                            <input type="text" id="nom" required>
                         </div>
                         <div class="form-group">
-                            <label for="employePrenom">Prénom:</label>
-                            <input type="text" id="employePrenom" name="prenom" required>
+                            <label for="prenom">Prénom</label>
+                            <input type="text" id="prenom">
                         </div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="employeEmail">Email:</label>
-                        <input type="email" id="employeEmail" name="email" required>
-                    </div>
-
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="employeShift">Shift:</label>
-                            <select id="employeShift" name="shift" required>
-                                <option value="jour">Jour (08:00 - 17:00)</option>
-                                <option value="soir">Soir (14:00 - 23:00)</option>
-                                <option value="nuit">Nuit (22:00 - 07:00)</option>
-                                <option value="personnalise">Personnalisé</option>
+                            <label for="email">Email *</label>
+                            <input type="email" id="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Mot de Passe *</label>
+                            <input type="password" id="password" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="shift">Shift</label>
+                            <select id="shift" onchange="toggleCustomShifts()">
+                                <option value="jour">Jour (9h-17h)</option>
+                                <option value="nuit">Nuit (21h-5h)</option>
+                                <option value="personnalise">Personnalisé (choisissez vos heures matin/soir)</option>
                             </select>
                         </div>
-                        
-                        <div class="form-group" id="customShiftGroup" style="display: none;">
-                            <label for="customHeureDebut">Heure début:</label>
-                            <input type="time" id="customHeureDebut" name="heureDebut">
+                    </div>
+                    <div class="form-row" id="shifts-personnalises" style="display:none;">
+                        <div class="form-group">
+                            <label for="heure_debut">Heure début matin (ex: 08:00)</label>
+                            <input type="time" id="heure_debut" required>
                         </div>
-                        
-                        <div class="form-group" id="customShiftGroup2" style="display: none;">
-                            <label for="customHeureFin">Heure fin:</label>
-                            <input type="time" id="customHeureFin" name="heureFin">
+                        <div class="form-group">
+                            <label for="heure_fin">Heure fin soir (ex: 18:00)</label>
+                            <input type="time" id="heure_fin" required>
                         </div>
                     </div>
-
-                    <button type="submit" class="btn-add">Inviter l'Employé</button>
+                    <button type="submit" class="btn-add">Ajouter l'Employé</button>
                 </form>
+                <h3>QR Code Fixe Unique (pour tout le bar)</h3>
+                <p>Utilisez ce QR unique pour tous les pointages. Imprimez-le et fixez-le au bar.</p>
+                <button class="btn-qr-fixed" onclick="loadAndGenerateFixedQR()">Générer & Télécharger QR Fixe</button>
             </div>
-
-            <!-- Liste des employés -->
-            <div class="employes-list-section">
-                <h2>Liste des Employés</h2>
+            <div class="section employes-list-section">
+                <h2>👥 Liste des Employés (<span id="total-employes">0</span>)</h2>
                 <div class="search-bar">
-                    <input type="text" id="searchEmploye" placeholder="Rechercher un employé...">
+                    <input type="text" id="search" placeholder="Rechercher par nom, email ou shift..." oninput="filterEmployes()">
+                    <button class="btn-filter" onclick="filterEmployes()">Filtrer</button>
                 </div>
-                <div id="employesList" class="employes-list">
-                    <!-- Liste générée dynamiquement -->
-                </div>
-            </div>
-
-            <!-- Modal détails employé -->
-            <div id="employeModal" class="modal">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <h3 id="modalTitle">Détails de l'Employé</h3>
-                    
-                    <div class="modal-body">
-                        <div class="employe-info">
-                            <div class="info-item">
-                                <label>Nom complet:</label>
-                                <span id="modalNomComplet"></span>
-                            </div>
-                            <div class="info-item">
-                                <label>Email:</label>
-                                <span id="modalEmail"></span>
-                            </div>
-                            <div class="info-item">
-                                <label>Shift:</label>
-                                <span id="modalShift"></span>
-                            </div>
-                            <div class="info-item">
-                                <label>Statut:</label>
-                                <span id="modalStatut"></span>
-                            </div>
-                        </div>
-
-                        <div class="modal-actions">
-                            <button id="btnConges" class="btn-conges">Gérer les Congés</button>
-                            <button id="btnHoraires" class="btn-horaires">Voir les Horaires</button>
-                            <button id="btnSupprimer" class="btn-supprimer">Supprimer l'Employé</button>
-                        </div>
-
-                        <!-- Section selfies récents -->
-                        <div class="selfies-section">
-                            <h4>Selfies Récents</h4>
-                            <div id="selfiesList" class="selfies-list">
-                                <!-- Selfies générés dynamiquement -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modal congés -->
-            <div id="congesModal" class="modal">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <h3>Gestion des Congés</h3>
-                    
-                    <div class="modal-body">
-                        <div class="employe-info">
-                            <h4 id="congesEmployeName"></h4>
-                            <p>Congés actuels: <span id="currentConges">0</span> jours</p>
-                        </div>
-
-                        <form id="addCongeForm">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="congeDateDebut">Date début:</label>
-                                    <input type="date" id="congeDateDebut" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="congeDateFin">Date fin:</label>
-                                    <input type="date" id="congeDateFin" required>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="congeMotif">Motif:</label>
-                                <select id="congeMotif">
-                                    <option value="conges payes">Congés Payés</option>
-                                    <option value="maladie">Maladie</option>
-                                    <option value="personnel">Raisons Personnelles</option>
-                                    <option value="formation">Formation</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn-add-conge">Ajouter le Congé</button>
-                        </form>
-
-                        <div class="conges-list">
-                            <h4>Congés Programmes</h4>
-                            <div id="listeConges">
-                                <!-- Liste des congés -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modal horaires -->
-            <div id="horairesModal" class="modal">
-                <div class="modal-content large">
-                    <span class="close">&times;</span>
-                    <h3>Historique des Horaires</h3>
-                    
-                    <div class="modal-body">
-                        <div class="filters">
-                            <select id="filterPeriode">
-                                <option value="today">Aujourd'hui</option>
-                                <option value="week">Cette semaine</option>
-                                <option value="month">Ce mois</option>
-                                <option value="all">Tout</option>
-                            </select>
-                            <input type="date" id="filterDateStart">
-                            <input type="date" id="filterDateEnd">
-                            <button id="applyFilters" class="btn-filter">Filtrer</button>
-                        </div>
-
-                        <div class="statistiques">
-                            <div class="stat-item">
-                                <span class="stat-label">Heures travaillées:</span>
-                                <span id="totalHeures" class="stat-value">0h</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Pointages:</span>
-                                <span id="totalPointages" class="stat-value">0</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Retards:</span>
-                                <span id="totalRetards" class="stat-value">0</span>
-                            </div>
-                        </div>
-
-                        <div id="horairesList" class="horaires-list">
-                            <!-- Horaires générés dynamiquement -->
-                        </div>
-                    </div>
-                </div>
+                <div class="employes-list" id="employes-list"></div>
             </div>
         </div>
     </div>
 
+    <!-- Modal Détails Employé -->
+    <div id="modal-details" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Détails de l'Employé</h2>
+                <span class="close" onclick="closeModal('modal-details')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="info-grid" id="modal-info"></div>
+                <div id="selfies-section">
+                    <h3>Selfies Récents</h3>
+                    <div class="selfies-grid" id="selfies-grid"></div>
+                </div>
+                <div id="horaires-section">
+                    <h3>Horaires Actuels</h3>
+                    <p id="horaires-display"></p>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-conges" onclick="openCongesModal(selectedEmployeId)">📅 Gérer Congés</button>
+                <button class="btn-modal btn-horaires" onclick="editHoraires(selectedEmployeId)">⏰ Modifier Horaires</button>
+                <button class="btn-modal btn-supprimer" onclick="confirmDelete(selectedEmployeId)">🗑️ Supprimer Employé</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Congés -->
+    <div id="modal-conges" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2 id="conges-title">Gestion des Congés - <span id="conges-name"></span></h2>
+                <span class="close" onclick="closeModal('modal-conges')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <h3>Ajouter un Congé</h3>
+                <form id="conge-form" class="conge-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="date_debut">Date Début *</label>
+                            <input type="date" id="date_debut" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="date_fin">Date Fin *</label>
+                            <input type="date" id="date_fin" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="motif">Motif *</label>
+                        <select id="motif" required>
+                            <option value="conges payes">Congés Payés</option>
+                            <option value="maladie">Maladie</option>
+                            <option value="personnel">Personnel</option>
+                            <option value="formation">Formation</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-add-conge">Ajouter Congé</button>
+                </form>
+                <div class="conges-list" id="conges-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
     <script type="module">
-        import { supabase } from './config.js';
+        // Config Supabase (tout inclus)
+        const SUPABASE_URL = 'https://sxhtqikqklriyjttnyme.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhYnVoYHB1Zm9hcmpwZmxxY3NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg5ODMyOTgsImV4cCI6MjA3NDU1OTI5OH0.bNRvqHfSmk5-PVnUzVfxgU_FWpaKpqgx-VF1_4ec6v4';
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        class AdminPage {
-            constructor() {
-                this.currentAdmin = null;
-                this.selectedEmploye = null;
-                this.initialize();
-            }
+        let employesData = [];
+        let filteredEmployes = [];
+        let selectedEmployeId = null;
 
-            initialize() {
-                this.checkAuthentication();
-                this.initializeElements();
-                this.initializeEventListeners();
-                this.loadEmployes();
-            }
-
-            checkAuthentication() {
-                const userType = localStorage.getItem('userType');
-                const userData = localStorage.getItem('currentUser');
-                
-                if (userType !== 'admin' || !userData) {
-                    window.location.href = 'index.html';
-                    return;
-                }
-                
-                this.currentAdmin = JSON.parse(userData);
-                document.getElementById('adminName').textContent = this.currentAdmin.email;
-            }
-
-            initializeElements() {
-                this.elements = {
-                    logoutBtn: document.getElementById('logoutBtn'),
-                    addEmployeForm: document.getElementById('addEmployeForm'),
-                    employesList: document.getElementById('employesList'),
-                    searchEmploye: document.getElementById('searchEmploye'),
-                    employeModal: document.getElementById('employeModal'),
-                    congesModal: document.getElementById('congesModal'),
-                    horairesModal: document.getElementById('horairesModal'),
-                    // Modal éléments
-                    modalTitle: document.getElementById('modalTitle'),
-                    modalNomComplet: document.getElementById('modalNomComplet'),
-                    modalEmail: document.getElementById('modalEmail'),
-                    modalShift: document.getElementById('modalShift'),
-                    modalStatut: document.getElementById('modalStatut'),
-                    selfiesList: document.getElementById('selfiesList'),
-                    btnConges: document.getElementById('btnConges'),
-                    btnHoraires: document.getElementById('btnHoraires'),
-                    btnSupprimer: document.getElementById('btnSupprimer'),
-                    congesEmployeName: document.getElementById('congesEmployeName'),
-                    currentConges: document.getElementById('currentConges'),
-                    addCongeForm: document.getElementById('addCongeForm'),
-                    listeConges: document.getElementById('listeConges'),
-                    filterPeriode: document.getElementById('filterPeriode'),
-                    filterDateStart: document.getElementById('filterDateStart'),
-                    filterDateEnd: document.getElementById('filterDateEnd'),
-                    applyFilters: document.getElementById('applyFilters'),
-                    totalHeures: document.getElementById('totalHeures'),
-                    totalPointages: document.getElementById('totalPointages'),
-                    totalRetards: document.getElementById('totalRetards'),
-                    horairesList: document.getElementById('horairesList'),
-                    // Closes
-                    closeButtons: document.querySelectorAll('.close')
-                };
-            }
-
-            initializeEventListeners() {
-                this.elements.logoutBtn.addEventListener('click', () => this.logout());
-                this.elements.addEmployeForm.addEventListener('submit', (e) => this.addEmploye(e));
-                this.elements.searchEmploye.addEventListener('input', (e) => this.searchEmployes(e.target.value));
-                this.elements.btnConges.addEventListener('click', () => this.openCongesModal());
-                this.elements.btnHoraires.addEventListener('click', () => this.openHorairesModal());
-                this.elements.btnSupprimer.addEventListener('click', () => this.deleteEmploye());
-                this.elements.addCongeForm.addEventListener('submit', (e) => this.addConge(e));
-                this.elements.applyFilters.addEventListener('click', () => this.applyFilters());
-                this.elements.filterPeriode.addEventListener('change', () => this.applyFilters());
-                
-                this.elements.closeButtons.forEach(btn => btn.addEventListener('click', () => this.closeModal()));
-                window.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('modal')) {
-                        this.closeModal();
-                    }
-                });
-                
-                document.getElementById('employeShift').addEventListener('change', (e) => this.toggleCustomShift(e.target.value));
-            }
-
-            toggleCustomShift(value) {
-                const customGroup1 = document.getElementById('customShiftGroup');
-                const customGroup2 = document.getElementById('customShiftGroup2');
-                if (value === 'personnalise') {
-                    customGroup1.style.display = 'block';
-                    customGroup2.style.display = 'block';
-                } else {
-                    customGroup1.style.display = 'none';
-                    customGroup2.style.display = 'none';
-                }
-            }
-
-            async logout() {
-                const { error } = await supabase.auth.signOut();
-                if (error) console.error('Erreur logout:', error);
-                localStorage.removeItem('currentUser');
-                localStorage.removeItem('userType');
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
                 window.location.href = 'index.html';
+                return;
             }
+            await loadAdminInfo(session.user);
+            await loadEmployes();
+            setupEventListeners();
+        });
 
-            async loadEmployes() {
-                const { data: employes, error } = await supabase
-                    .from('employes')
-                    .select('*');
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_OUT') window.location.href = 'index.html';
+        });
 
-                if (error) {
-                    console.error('Erreur load employes:', error);
-                    return;
-                }
-                this.renderEmployesList(employes || []);
-            }
-
-            renderEmployesList(employes) {
-                this.elements.employesList.innerHTML = employes.map(emp => `
-                    <div class="employe-card" data-id="${emp.id}">
-                        <div class="employe-info-card">
-                            <div class="employe-name">${emp.prenom} ${emp.nom}</div>
-                            <div class="employe-details">${emp.email}</div>
-                        </div>
-                        <span class="employe-status status-active">Actif</span>
-                    </div>
-                `).join('');
-                
-                // Ajouter event listeners pour ouverture modal
-                document.querySelectorAll('.employe-card').forEach(card => {
-                    card.addEventListener('click', () => this.openEmployeModal(card.dataset.id));
-                });
-            }
-
-            searchEmployes(query) {
-                // Pour la recherche, on peut utiliser une requête Supabase avec like, mais pour simplicité, on charge tout et filtre côté client
-                this.loadEmployes().then(() => {
-                    let employes = Array.from(this.elements.employesList.querySelectorAll('.employe-card'));
-                    const filtered = employes.filter(card => 
-                        card.textContent.toLowerCase().includes(query.toLowerCase())
-                    );
-                    filtered.forEach(f => f.style.display = 'flex');
-                    employes.forEach(e => { if (!filtered.includes(e)) e.style.display = 'none'; });
-                });
-            }
-
-            async openEmployeModal(id) {
-                const { data: employe } = await supabase
-                    .from('employes')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
-
-                this.selectedEmploye = employe;
-                if (!this.selectedEmploye) return;
-                
-                this.elements.modalTitle.textContent = `Détails: ${this.selectedEmploye.prenom} ${this.selectedEmploye.nom}`;
-                this.elements.modalNomComplet.textContent = `${this.selectedEmploye.prenom} ${this.selectedEmploye.nom}`;
-                this.elements.modalEmail.textContent = this.selectedEmploye.email;
-                this.elements.modalShift.textContent = this.selectedEmploye.shift || 'Non défini';
-                this.elements.modalStatut.textContent = 'Actif'; // À adapter avec congés
-                
-                await this.loadSelfiesForEmploye();
-                this.elements.employeModal.style.display = 'block';
-            }
-
-            async loadSelfiesForEmploye() {
-                const { data: selfiesData, error } = await supabase
-                    .from('selfies')
-                    .select('*')
-                    .eq('user_id', this.selectedEmploye.id)
-                    .order('timestamp', { ascending: false })
-                    .limit(6);
-
-                if (error) {
-                    console.error('Erreur load selfies:', error);
-                    return;
-                }
-
-                // Récupérer URLs publiques depuis storage
-                const selfies = await Promise.all(selfiesData.map(async (s) => {
-                    const { data: { publicUrl } } = supabase.storage
-                        .from('selfies')
-                        .getPublicUrl(s.file_path);
-                    return { ...s, url: publicUrl };
-                }));
-
-                this.elements.selfiesList.innerHTML = selfies.map(selfie => {
-                    const date = new Date(selfie.timestamp);
-                    return `
-                        <div class="selfie-item">
-                            <img src="${selfie.url}" alt="Selfie" class="selfie-img">
-                            <div class="selfie-time">${date.toLocaleString('fr-FR')}</div>
-                        </div>
-                    `;
-                }).join('');
-            }
-
-            openCongesModal() {
-                this.elements.congesEmployeName.textContent = `${this.selectedEmploye.prenom} ${this.selectedEmploye.nom}`;
-                // Calculer congés actuels (simulation)
-                this.elements.currentConges.textContent = '5'; // À implémenter avec requête
-                this.loadCongesForEmploye();
-                this.elements.employeModal.style.display = 'none';
-                this.elements.congesModal.style.display = 'block';
-            }
-
-            async loadCongesForEmploye() {
-                const { data: conges, error } = await supabase
-                    .from('conges')
-                    .select('*')
-                    .eq('user_id', this.selectedEmploye.id);
-                
-                if (error) {
-                    console.error('Erreur load conges:', error);
-                    return;
-                }
-                
-                this.elements.listeConges.innerHTML = conges.map(conge => `
-                    <div class="conge-item">
-                        <div>
-                            <div class="conge-dates">${new Date(conge.date_debut).toLocaleDateString()} - ${new Date(conge.date_fin).toLocaleDateString()}</div>
-                            <div class="conge-motif">${conge.motif}</div>
-                        </div>
-                        <button class="btn-supprimer" onclick="adminPage.deleteConge(${conge.id})">Supprimer</button>
-                    </div>
-                `).join('');
-            }
-
-            async addConge(e) {
-                e.preventDefault();
-                const dateDebut = document.getElementById('congeDateDebut').value;
-                const dateFin = document.getElementById('congeDateFin').value;
-                const motif = document.getElementById('congeMotif').value;
-                
-                const conge = {
-                    user_id: this.selectedEmploye.id,
-                    date_debut: dateDebut,
-                    date_fin: dateFin,
-                    motif
-                };
-                
-                const { error } = await supabase
-                    .from('conges')
-                    .insert([conge]);
-
-                if (error) {
-                    console.error('Erreur add conge:', error);
-                    alert('Erreur ajout congé.');
-                    return;
-                }
-                
-                this.loadCongesForEmploye();
-                alert('Congé ajouté !');
-            }
-
-            async deleteConge(id) {
-                const { error } = await supabase
-                    .from('conges')
-                    .delete()
-                    .eq('id', id);
-
-                if (error) {
-                    console.error('Erreur delete conge:', error);
-                    return;
-                }
-                this.loadCongesForEmploye();
-            }
-
-            openHorairesModal() {
-                this.elements.employeModal.style.display = 'none';
-                this.elements.horairesModal.style.display = 'block';
-                this.applyFilters();
-            }
-
-            async applyFilters() {
-                let pointagesQuery = supabase
-                    .from('pointages')
-                    .select('*')
-                    .eq('user_id', this.selectedEmploye.id);
-
-                const periode = this.elements.filterPeriode.value;
-                
-                if (periode === 'today') {
-                    const today = new Date().toISOString().split('T')[0];
-                    pointagesQuery = pointagesQuery.gte('timestamp', `${today}T00:00:00Z`).lte('timestamp', `${today}T23:59:59Z`);
-                } else if (periode === 'week') {
-                    const weekAgo = new Date();
-                    weekAgo.setDate(weekAgo.getDate() - 7);
-                    pointagesQuery = pointagesQuery.gte('timestamp', weekAgo.toISOString());
-                } else if (periode === 'month') {
-                    const monthAgo = new Date();
-                    monthAgo.setMonth(monthAgo.getMonth() - 1);
-                    pointagesQuery = pointagesQuery.gte('timestamp', monthAgo.toISOString());
-                }
-                
-                // Dates custom
-                const start = this.elements.filterDateStart.value;
-                const end = this.elements.filterDateEnd.value;
-                if (start && end) {
-                    pointagesQuery = pointagesQuery.gte('timestamp', new Date(start).toISOString()).lte('timestamp', new Date(end).toISOString());
-                }
-                
-                const { data: pointages, error } = await pointagesQuery.order('timestamp', { ascending: true });
-                
-                if (error) {
-                    console.error('Erreur apply filters:', error);
-                    return;
-                }
-                
-                this.renderHorairesList(pointages || []);
-                this.updateStats(pointages || []);
-            }
-
-            renderHorairesList(pointages) {
-                this.elements.horairesList.innerHTML = pointages.map(item => {
-                    const date = new Date(item.timestamp);
-                    const className = item.type === 'sortie' ? 'horaire-item normal' : 'horaire-item normal'; // À adapter pour retards
-                    return `
-                        <div class="${className}">
-                            <div>
-                                <div class="horaire-time">${date.toLocaleTimeString('fr-FR')}</div>
-                                <div class="horaire-type">${item.type}</div>
-                            </div>
-                            <span>${date.toLocaleDateString('fr-FR')}</span>
-                        </div>
-                    `;
-                }).join('');
-            }
-
-            updateStats(pointages) {
-                this.elements.totalPointages.textContent = pointages.length;
-                // Calcul heures (simulation - à implémenter avec logique réelle)
-                this.elements.totalHeures.textContent = '8h'; 
-                this.elements.totalRetards.textContent = '0'; // À implémenter
-            }
-
-            closeModal() {
-                this.elements.employeModal.style.display = 'none';
-                this.elements.congesModal.style.display = 'none';
-                this.elements.horairesModal.style.display = 'none';
-            }
-
-            async addEmploye(e) {
-                e.preventDefault();
-                const nom = document.getElementById('employeNom').value;
-                const prenom = document.getElementById('employePrenom').value;
-                const email = document.getElementById('employeEmail').value;
-                const shift = document.getElementById('employeShift').value;
-                let heureDebut = '', heureFin = '';
-                if (shift === 'personnalise') {
-                    heureDebut = document.getElementById('customHeureDebut').value;
-                    heureFin = document.getElementById('customHeureFin').value;
-                }
-                
-                // 1. Envoyer invitation email (magic link ou password reset)
-                const { data, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email, {
-                    redirectTo: window.location.origin + '/employe.html'  // URL après clic lien (adapte à ton domaine)
-                });
-                
-                if (inviteError) {
-                    console.error('Erreur invitation:', inviteError);
-                    alert('Erreur envoi invitation.');
-                    return;
-                }
-                
-                // 2. Mettre à jour employes après signup (trigger auto insère base, on update détails)
-                // Attendre un peu pour que trigger s'exécute, ou query par email
-                setTimeout(async () => {
-                    const { data: newUser } = await supabase.auth.admin.getUserByEmail(email);
-                    if (newUser.user) {
-                        const { error: updateError } = await supabase
-                            .from('employes')
-                            .update({ nom, prenom, shift: shift === 'personnalise' ? `${heureDebut}-${heureFin}` : shift, invited_by: this.currentAdmin.id })
-                            .eq('id', newUser.user.id);
-                        
-                        if (updateError) {
-                            console.error('Erreur update employé:', updateError);
-                        } else {
-                            alert(`Invitation envoyée à ${email} ! Il cliquera le lien pour set password.`);
-                            this.elements.addEmployeForm.reset();
-                            this.loadEmployes();
-                        }
-                    }
-                }, 2000);  // Délai pour trigger
-            }
-
-            async deleteEmploye() {
-                if (confirm('Supprimer cet employé ?')) {
-                    // Supprimer de auth.users d'abord (cascade supprime employes/pointages etc.)
-                    const { error: authError } = await supabase.auth.admin.deleteUser(this.selectedEmploye.id);
-                    
-                    if (authError) {
-                        console.error('Erreur delete auth:', authError);
-                        return;
-                    }
-                    
-                    this.closeModal();
-                    this.loadEmployes();
-                }
+        async function loadAdminInfo(user) {
+            const { data } = await supabase.from('admins').select('email').eq('id', user.id).single();
+            if (data) {
+                document.getElementById('admin-name').textContent = `Admin: ${data.email}`;
+                document.getElementById('admin-avatar').textContent = data.email.charAt(0).toUpperCase();
             }
         }
 
-        // Initialiser
-        const adminPage = new AdminPage();
+        async function loadEmployes() {
+            const { data, error } = await supabase.from('employes').select('*').order('nom', { ascending: true });
+            if (error) return showToast('Erreur chargement employés: ' + error.message, 'error');
+            employesData = data || [];
+            filteredEmployes = [...employesData];
+            displayEmployes(filteredEmployes);
+            document.getElementById('total-employes').textContent = employesData.length;
+        }
+
+        function displayEmployes(employes) {
+            const list = document.getElementById('employes-list');
+            if (!employes.length) {
+                list.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Aucun employé trouvé.</p>';
+                return;
+            }
+            list.innerHTML = employes.map(emp => {
+                const statusClass = emp.active ? 'status-active' : 'status-inactive';
+                const statusText = emp.active ? 'Actif' : (emp.disabled_reason ? `Inactif: ${emp.disabled_reason}` : 'Inactif');
+                return `
+                    <div class="employe-card" onclick="openModal('${emp.id}')">
+                        <div class="employe-info-card">
+                            <div class="employe-name">${emp.prenom || ''} ${emp.nom}</div>
+                            <div class="employe-details">📧 ${emp.email} | ⏰ ${emp.shift} ${emp.heure_debut ? ` (Matin: ${emp.heure_debut} - Soir: ${emp.heure_fin})` : ''}</div>
+                        </div>
+                        <span class="employe-status ${statusClass}">${statusText}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function setupEventListeners() {
+            // Ajout employé (sans make_admin, toujours employé normal)
+            document.getElementById('employe-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const nom = document.getElementById('nom').value.trim();
+                const prenom = document.getElementById('prenom').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+                const shift = document.getElementById('shift').value;
+                let heureDebut = null, heureFin = null;
+                if (shift === 'personnalise') {
+                    heureDebut = document.getElementById('heure_debut').value;
+                    heureFin = document.getElementById('heure_fin').value;
+                    if (!heureDebut || !heureFin) {
+                        showToast('Pour shift personnalisé, choisissez une heure début matin et fin soir.', 'error');
+                        return;
+                    }
+                    // Validation simple : fin > début (optionnel, mais logique)
+                    if (heureFin <= heureDebut) {
+                        showToast('Heure fin soir doit être après début matin.', 'error');
+                        return;
+                    }
+                }
+
+                const { data, error } = await supabase.rpc('create_employee_complete', {
+                    p_nom: nom,
+                    p_prenom: prenom,
+                    p_email: email,
+                    p_password: password,
+                    p_shift: shift,
+                    p_heure_debut: heureDebut,
+                    p_heure_fin: heureFin,
+                    p_make_admin: false  // Toujours employé normal
+                });
+                if (error) return showToast('Erreur création: ' + error.message, 'error');
+                showToast('Employé ajouté avec succès ! Utilisez le QR fixe pour son pointage.', 'success');
+                document.getElementById('employe-form').reset();
+                document.getElementById('shifts-personnalises').style.display = 'none';
+                await loadEmployes();
+            });
+
+            // Ajout congé (inchangé)
+            document.getElementById('conge-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!selectedEmployeId) return;
+                const dateDebut = document.getElementById('date_debut').value;
+                const dateFin = document.getElementById('date_fin').value;
+                const motif = document.getElementById('motif').value;
+                if (new Date(dateDebut) > new Date(dateFin)) {
+                    showToast('La date de fin doit être après la date de début.', 'error');
+                    return;
+                }
+                const { error } = await supabase.from('conges').insert({
+                    user_id: selectedEmployeId,
+                    date_debut: dateDebut,
+                    date_fin: dateFin,
+                    motif
+                });
+                if (error) return showToast('Erreur ajout congé: ' + error.message, 'error');
+                showToast('Congé ajouté ! En attente d\'approbation.', 'success');
+                document.getElementById('conge-form').reset();
+                await loadConges(selectedEmployeId);
+            });
+        }
+
+        function toggleCustomShifts() {
+            const shift = document.getElementById('shift').value;
+            const section = document.getElementById('shifts-personnalises');
+            section.style.display = shift === 'personnalise' ? 'grid' : 'none';
+            if (shift !== 'personnalise') {
+                document.getElementById('heure_debut').value = '';
+                document.getElementById('heure_fin').value = '';
+            }
+        }
+
+        function filterEmployes() {
+            const term = document.getElementById('search').value.toLowerCase();
+            filteredEmployes = employesData.filter(emp =>
+                emp.nom.toLowerCase().includes(term) ||
+                (emp.prenom && emp.prenom.toLowerCase().includes(term)) ||
+                emp.email.toLowerCase().includes(term) ||
+                emp.shift.toLowerCase().includes(term)
+            );
+            displayEmployes(filteredEmployes);
+        }
+
+        async function loadAndGenerateFixedQR() {
+            const { data, error } = await supabase.rpc('get_qr_fixed_token');
+            if (error || !data) return showToast('Erreur chargement QR fixe.', 'error');
+            const token = data;
+            const canvas = document.createElement('canvas');
+            canvas.id = 'qr-canvas';
+            document.body.appendChild(canvas);
+            try {
+                await QRCode.toCanvas(canvas, token, { width: 200, margin: 2, color: { dark: '#000000', light: '#FFFFFF' } });
+                const link = document.createElement('a');
+                link.download = 'QR_Fixe_Bar.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                showToast('QR fixe téléchargé ! Imprimez et fixez au bar.', 'success');
+            } catch (qrError) {
+                showToast('Erreur génération QR: ' + qrError.message, 'error');
+            } finally {
+                document.body.removeChild(canvas);
+            }
+        }
+
+        // openModal, loadSelfies, viewFullSelfie, closeModal, openCongesModal, loadConges, approuverConge, editHoraires, confirmDelete, logout, showToast (tous inclus, identiques à v3.2)
+        async function openModal(empId) {
+            selectedEmployeId = empId;
+            const emp = employesData.find(e => e.id === empId);
+            if (!emp) return;
+            document.getElementById('modal-title').textContent = `${emp.prenom || ''} ${emp.nom}`;
+            document.getElementById('modal-info').innerHTML = `
+                <div class="info-item"><label>Email</label><value>${emp.email}</value></div>
+                <div class="info-item"><label>Shift</label><value>${emp.shift}${emp.heure_debut ? ` (Matin: ${emp.heure_debut} - Soir: ${emp.heure_fin})` : ''}</value></div>
+                <div class="info-item"><label>Statut</label><value>${emp.active ? 'Actif' : 'Inactif'}</value></div>
+                ${emp.disabled_reason ? `<div class="info-item"><label>Raison inactif</label><value>${emp.disabled_reason}</value></div>` : ''}
+            `;
+            document.getElementById('horaires-display').textContent = `Shift actuel: ${emp.shift}. ${emp.heure_debut ? `Personnalisé: Début matin à ${emp.heure_debut}, fin soir à ${emp.heure_fin}.` : 'Horaires par défaut.'}`;
+            await loadSelfies(empId);
+            document.getElementById('modal-details').style.display = 'block';
+        }
+
+        async function loadSelfies(empId) {
+            const { data } = await supabase.from('selfies').select('storage_path, created_at').eq('user_id', empId).order('created_at', { ascending: false }).limit(10);
+            const grid = document.getElementById('selfies-grid');
+            if (!data || !data.length) {
+                grid.innerHTML = '<p style="text-align: center; color: #666;">Aucun selfie enregistré.</p>';
+            } else {
+                grid.innerHTML = data.map(s => `<img src="${SUPABASE_URL}/storage/v1/object/public/selfies/${s.storage_path}" alt="Selfie du ${new Date(s.created_at).toLocaleDateString('fr-FR')}" class="selfie-img" onclick="viewFullSelfie(this.src)">`).join('');
+            }
+        }
+
+        function viewFullSelfie(src) {
+            window.open(src, '_blank');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        async function openCongesModal(empId) {
+            selectedEmployeId = empId;
+            const emp = employesData.find(e => e.id === empId);
+            document.getElementById('conges-title').textContent = `Gestion des Congés - ${emp.prenom || ''} ${emp.nom}`;
+            closeModal('modal-details');
+            document.getElementById('modal-conges').style.display = 'block';
+            await loadConges(empId);
+        }
+
+        async function loadConges(empId) {
+            const { data, error } = await supabase.from('conges').select('*').eq('user_id', empId).order('date_debut', { ascending: false });
+            if (error) return showToast('Erreur chargement congés: ' + error.message, 'error');
+            const list = document.getElementById('conges-list');
+            if (!data || !data.length) {
+                list.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Aucun congé enregistré.</p>';
+            } else {
+                list.innerHTML = data.map(c => {
+                    const isPending = c.approuve === null;
+                    const className = isPending ? 'conge-item pending' : (c.approuve ? 'conge-item' : 'conge-item rejected');
+                    const status = isPending ? 'En attente' : (c.approuve ? 'Approuvé' : 'Rejeté');
+                    return `
+                        <div class="${className}">
+                            <div class="conge-details">
+                                <div class="conge-motif">${c.motif.replace('_', ' ')}</div>
+                                <div class="conge-dates">Du ${c.date_debut} au ${c.date_fin}</div>
+                            </div>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <span style="padding: 5px 10px; background: #e9ecef; border-radius: 5px; font-size: 12px; font-weight: bold;">${status}</span>
+                                ${isPending ? `
+                                    <button class="btn-approuver" onclick="approuverConge('${c.id}', true)">Approuver</button>
+                                    <button class="btn-rejeter" onclick="approuverConge('${c.id}', false)">Rejeter</button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        async function approuverConge(id, approuve) {
+            const { error } = await supabase.from('conges').update({ approuve }).eq('id', id);
+            if (error) return showToast('Erreur mise à jour congé: ' + error.message, 'error');
+            showToast(`Congé ${approuve ? 'approuvé' : 'rejeté'} !`, 'success');
+            await loadConges(selectedEmployeId);
+            if (!approuve) {
+                await supabase.from('employes').update({ active: false, disabled_reason: 'Congé rejeté' }).eq('id', selectedEmployeId);
+                await loadEmployes();
+            }
+        }
+
+        async function editHoraires(empId) {
+            const emp = employesData.find(e => e.id === empId);
+            const newShift = prompt('Nouveau shift (jour/nuit/personnalise):', emp.shift);
+            if (!newShift || newShift === emp.shift) return closeModal('modal-details');
+            let hDebut = emp.heure_debut, hFin = emp.heure_fin;
+            if (newShift === 'personnalise') {
+                hDebut = prompt('Heure début matin (HH:MM, ex: 07:30):', emp.heure_debut || '08:00');
+                hFin = prompt('Heure fin soir (HH:MM, ex: 19:00):', emp.heure_fin || '18:00');
+                if (!hDebut || !hFin) {
+                    showToast('Heures invalides pour shift personnalisé.', 'error');
+                    return;
+                }
+                if (hFin <= hDebut) {
+                    showToast('Heure fin soir doit être après début matin.', 'error');
+                    return;
+                }
+            }
+            const { error } = await supabase.from('employes').update({
+                shift: newShift,
+                heure_debut: newShift === 'personnalise' ? hDebut : null,
+                heure_fin: newShift === 'personnalise' ? hFin : null
+            }).eq('id', empId);
+            if (error) return showToast('Erreur mise à jour horaires: ' + error.message, 'error');
+            showToast('Horaires mis à jour avec succès !', 'success');
+            closeModal('modal-details');
+            await loadEmployes();
+        }
+
+        async function confirmDelete(empId) {
+            if (!confirm('Supprimer cet employé ? (Tous ses pointages et selfies seront supprimés via CASCADE)')) return;
+            const { error } = await supabase.from('employes').delete().eq('id', empId);
+            if (error) return showToast('Erreur suppression: ' + error.message, 'error');
+            showToast('Employé supprimé !', 'success');
+            closeModal('modal-details');
+            await loadEmployes();
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+        }
+
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Fermeture modals sur clic extérieur
+        window.onclick = (event) => {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        };
     </script>
 </body>
 </html>
