@@ -1,235 +1,203 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des Horaires - Connexion</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestion des Horaires - Connexion</title>
+  <style>
+    /* ============ RESET / BASE ============ */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    :root{
+      --bg1:#667eea; --bg2:#764ba2;
+      --primary:#2699e7; --primary-hover:#1d7dc2;
+      --text:#333; --muted:#555;
+      --border:#e1e5e9;
+      --ok-bg:#d4edda; --ok-text:#155724; --ok-bd:#c3e6cb;
+      --err-bg:#f8d7da; --err-text:#721c24; --err-bd:#f5c6cb;
+    }
 
-        .container {
-            width: 100%;
-            max-width: 400px;
-            padding: 20px;
-        }
+    body{
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh; display:flex; align-items:center; justify-content:center;
+      background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+    }
 
-        .login-container {
-            background: white;
-            padding: 40px 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            text-align: center;
-        }
+    /* ============ LAYOUT ============ */
+    .container{ width:100%; max-width:420px; padding:20px; }
+    .card{
+      background:#fff; padding:40px 30px; border-radius:16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.18);
+    }
 
-        .logo {
-            margin-bottom: 20px;
-        }
+    h1{ color:var(--text); font-size:24px; margin-bottom:22px; text-align:center; }
 
-        .logo img {
-            width: 80px;
-            height: 80px;
-        }
+    .logo{ display:flex; justify-content:center; margin-bottom:16px; }
+    .logo img{ width:80px; height:80px; }
 
-        h1 {
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 24px;
-        }
+    .form-group{ margin-bottom:16px; }
+    label{ display:block; margin-bottom:6px; color:var(--muted); font-weight:500; }
+    input{
+      width:100%; padding:12px; border:2px solid var(--border); border-radius:10px; font-size:14px;
+      transition:border-color .2s ease;
+    }
+    input:focus{ outline:none; border-color:var(--primary); }
 
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
+    .btn{
+      width:100%; padding:12px; border:none; border-radius:10px; cursor:pointer;
+      background:var(--primary); color:#fff; font-weight:600; font-size:16px;
+      transition: background .2s ease, transform .04s ease;
+    }
+    .btn:hover{ background:var(--primary-hover); }
+    .btn:active{ transform: translateY(1px); }
+    .btn[disabled]{ opacity:.7; cursor:not-allowed; }
 
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #555;
-            font-weight: 500;
-        }
+    .row{ margin-top:10px; display:flex; align-items:center; gap:10px; }
 
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
+    .message{
+      margin-top:14px; padding:10px; border-radius:8px; font-size:14px; display:none;
+      word-wrap:break-word;
+    }
+    .message.success{ background:var(--ok-bg); color:var(--ok-text); border:1px solid var(--ok-bd); display:block; }
+    .message.error{ background:var(--err-bg); color:var(--err-text); border:1px solid var(--err-bd); display:block; }
 
-        input:focus {
-            outline: none;
-            border-color: #2699e7;
-        }
+    .hint{ margin-top:10px; text-align:center; color:#666; font-size:12px; }
 
-        .btn-login {
-            width: 100%;
-            padding: 12px;
-            background: #2699e7;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
-            margin-bottom: 15px;
-        }
+    /* Spinner minimal */
+    .spinner{
+      width:18px;height:18px;border-radius:50%;
+      border:2px solid transparent;border-top-color:#fff;border-left-color:#fff;
+      animation:spin .6s linear infinite; display:none;
+    }
+    .btn.loading .spinner{ display:inline-block; }
+    .btn.loading .btn-text{ opacity:.0; }
 
-        .btn-login:hover {
-            background: #1d7dc2;
-        }
+    @keyframes spin{ to{ transform:rotate(360deg);} }
 
-        .message {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .login-container {
-                padding: 30px 20px;
-            }
-        }
-    </style>
+    @media (max-width:480px){ .card{ padding:32px 22px; } }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="login-container">
-            <h1>Gestion des Horaires</h1>
-            <div class="logo">
-                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDIyQzE3LjUyMjggMjIgMjIgMTcuNTIyOCAyMiAxMkMyMiA2LjQ3NzE1IDE3LjUyMjggMiAxMiAyQzYuNDc3MTUgMiAyIDYuNDc3MTUgMiAxMkMyIDE3LjUyMjggNi40NzcxNSAyMiAxMiAyMloiIHN0cm9rZT0iIzI2OTlFNyIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTEyIDZWN0UxMiA3IDEyIDcgMTIgN1oiIGZpbGw9IiMyNjk5RTciLz4KPHBhdGggZD0iTTEyIDEwVjE2IiBzdHJva2U9IiMyNjk5RTciIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=" alt="Logo">
-            </div>
-            
-            <form id="loginForm" class="login-form">
-                <div class="form-group">
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Mot de passe:</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                
-                <button type="submit" class="btn-login">Se connecter</button>
-            </form>
-            
-            <div id="message" class="message"></div>
+  <div class="container">
+    <div class="card" role="region" aria-labelledby="title">
+      <h1 id="title">Gestion des Horaires</h1>
+
+      <div class="logo" aria-hidden="true">
+        <!-- Icône horloge inline (SVG base64 possible) -->
+        <img alt="" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDIyQzE3LjUyMjggMjIgMjIgMTcuNTIyOCAyMiAxMkMyMiA2LjQ3NzE1IDE3LjUyMjggMiAxMiAyQzYuNDc3MTUgMiAyIDYuNDc3MTUgMiAxMkMyIDE3LjUyMjggNi40NzcxNSAyMiAxMiAyMloiIHN0cm9rZT0iIzI2OTlFNyIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTEyIDZWN0UxMiA3IDEyIDcgMTIgN1oiIGZpbGw9IiMyNjk5RTciLz4KPHBhdGggZD0iTTEyIDEwVjE2IiBzdHJva2U9IiMyNjk5RTciIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="/>
+      </div>
+
+      <form id="loginForm" class="login-form" novalidate>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input autocomplete="username" type="email" id="email" name="email" required placeholder="ex: nom@domaine.com"/>
         </div>
+
+        <div class="form-group">
+          <label for="password">Mot de passe</label>
+          <input autocomplete="current-password" type="password" id="password" name="password" required placeholder="••••••••"/>
+        </div>
+
+        <button type="submit" id="btnLogin" class="btn">
+          <span class="btn-text">Se connecter</span>
+          <span class="spinner" aria-hidden="true"></span>
+        </button>
+
+        <div id="msg" class="message" aria-live="polite"></div>
+      </form>
+
+      <div class="hint">Connectez-vous avec vos identifiants Supabase.</div>
     </div>
+  </div>
 
-    <script type="module">
-        import { supabase } from './config.js';
+  <script type="module">
+    import { supabase } from './config.js';
 
-        // Éléments DOM
-        const loginForm = document.getElementById('loginForm');
-        const messageDiv = document.getElementById('message');
+    // DOM refs
+    const form = document.getElementById('loginForm');
+    const msg  = document.getElementById('msg');
+    const btn  = document.getElementById('btnLogin');
 
-        function showMessage(message, type = 'error') {
-            messageDiv.textContent = message;
-            messageDiv.className = `message ${type}`;
-            messageDiv.style.display = 'block';
-            
-            setTimeout(() => {
-                messageDiv.style.display = 'none';
-            }, 5000);
+    const showMessage = (text, type='error') => {
+      msg.textContent = text;
+      msg.className = `message ${type}`;
+      msg.style.display = 'block';
+    };
+
+    const setLoading = (isLoading) => {
+      if (isLoading) {
+        btn.classList.add('loading');
+        btn.setAttribute('disabled', 'true');
+      } else {
+        btn.classList.remove('loading');
+        btn.removeAttribute('disabled');
+      }
+    };
+
+    // Redirection sécurisée selon rôle (table `admins`)
+    async function redirectByRole() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+
+      const userId = session.user.id;
+      const { data: adminRow, error } = await supabase
+        .from('admins')
+        .select('id')
+        .eq('id', userId)
+        .maybeSingle();
+
+      // même en cas d'erreur, on évite de bloquer l'utilisateur
+      if (error) {
+        console.error('Erreur check admin:', error.message);
+      }
+
+      window.location.href = adminRow ? 'admin.html' : 'employe.html';
+    }
+
+    // Connexion
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.style.display = 'none';
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!email || !password) {
+        showMessage('Veuillez remplir tous les champs.');
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error || !data?.user) {
+          showMessage('Email ou mot de passe incorrect.');
+          return;
         }
+        showMessage('Connexion réussie ! Redirection…', 'success');
+        await redirectByRole();
+      } catch (err) {
+        console.error(err);
+        showMessage("Une erreur est survenue lors de la connexion.");
+      } finally {
+        setLoading(false);
+      }
+    });
 
-        // Connexion avec Supabase Auth
-        loginForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            // Sign in via Auth
-            const { data: { user }, error } = await supabase.auth.signInWithPassword({ email, password });
-            
-            if (error || !user) {
-                showMessage('Email ou mot de passe incorrect');
-                return;
-            }
-            
-            // Vérifier type (admin ou employé)
-            let userType = 'employe';
-            let redirectPage = 'employe.html';
-            
-            // Check si admin
-            const { data: adminCheck } = await supabase
-                .from('admins')
-                .select('id')
-                .eq('id', user.id)
-                .single();
-            
-            if (adminCheck) {
-                userType = 'admin';
-                redirectPage = 'admin.html';
-            }
-            
-            showMessage('Connexion réussie! Redirection...', 'success');
-            localStorage.setItem('currentUser', JSON.stringify(user));  // Utilise user de Auth
-            localStorage.setItem('userType', userType);
-            
-            setTimeout(() => {
-                window.location.href = redirectPage;
-            }, 1000);
-        });
+    // Déjà connecté ? Redirige automatiquement
+    document.addEventListener('DOMContentLoaded', async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await redirectByRole();
+      }
+    });
 
-        // Vérifier si un utilisateur est déjà connecté et gérer session
-        function checkExistingLogin() {
-            const userType = localStorage.getItem('userType');
-            const currentUser = localStorage.getItem('currentUser');
-            
-            if (userType && currentUser) {
-                if (userType === 'employe') {
-                    window.location.href = 'employe.html';
-                } else if (userType === 'admin') {
-                    window.location.href = 'admin.html';
-                }
-            }
-        }
-
-        // Écouter changements d'auth (logout auto)
-        supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_OUT') {
-                localStorage.removeItem('currentUser');
-                localStorage.removeItem('userType');
-                window.location.href = 'index.html';
-            }
-        });
-
-        document.addEventListener('DOMContentLoaded', checkExistingLogin);
-    </script>
+    // Logout auto: si la session se ferme ailleurs, on revient ici
+    supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        window.location.href = 'index.html';
+      }
+    });
+  </script>
 </body>
-  </html>
+</html>
