@@ -101,7 +101,7 @@
         <div id="msg" class="message" aria-live="polite"></div>
       </form>
 
-      <div class="hint">Entrez votre email pour recevoir un lien de connexion (admins et employés).</div>
+      <div class="hint">Entrez votre email pour recevoir un lien de connexion sécurisé (admins et employés).</div>
     </div>
   </div>
 
@@ -133,10 +133,10 @@
     function checkBypass() {
       const urlParams = new URLSearchParams(window.location.search);
       const bypass = urlParams.get('bypass');
-      if (bypass === 'admin') {  // Change 'admin' en un token secret si tu veux (ex: 'monsecret123')
+      if (bypass === 'admin') {
         console.log('🔓 Bypass activé : Redirection admin');
         showMessage('Accès admin direct (mode test).', 'success');
-        setTimeout(() => window.location.href = 'admin.html?bypass=admin', 1500);  // Passe le param pour les sous-pages si besoin
+        setTimeout(() => window.location.href = 'admin.html?bypass=admin', 1500);
         return true;
       }
       return false;
@@ -178,7 +178,7 @@
       window.location.href = target;
     }
 
-    // Connexion par email (Magic Link pour admins et employés)
+    // Connexion par email (Magic Link pour tous)
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       msg.style.display = 'none';
