@@ -93,20 +93,15 @@
           <input autocomplete="username" type="email" id="email" name="email" required placeholder="ex: nom@domaine.com"/>
         </div>
 
-        <div class="form-group">
-          <label for="password">Mot de passe</label>
-          <input autocomplete="current-password" type="password" id="password" name="password" required placeholder="••••••••"/>
-        </div>
-
         <button type="submit" id="btnLogin" class="btn">
-          <span class="btn-text">Se connecter</span>
+          <span class="btn-text">Se connecter par email</span>
           <span class="spinner" aria-hidden="true"></span>
         </button>
 
         <div id="msg" class="message" aria-live="polite"></div>
       </form>
 
-      <div class="hint">Connectez-vous avec vos identifiants Supabase.</div>
+      <div class="hint">Entrez votre email pour recevoir un lien de connexion (admins et employés).</div>
     </div>
   </div>
 
@@ -134,67 +129,109 @@
       }
     };
 
+    // Check bypass via URL (pour dev/test seulement)
+    function checkBypass() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const bypass = urlParams.get('bypass');
+      if (bypass === 'admin') {  // Change 'admin' en un token secret si tu veux (ex: 'monsecret123')
+        console.log('🔓 Bypass activé : Redirection admin');
+        showMessage('Accès admin direct (mode test).', 'success');
+        setTimeout(() => window.location.href = 'admin.html?bypass=admin', 1500);  // Passe le param pour les sous-pages si besoin
+        return true;
+      }
+      return false;
+    }
+
     // Redirection sécurisée selon rôle (table `admins`)
     async function redirectByRole() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return;
+      console.log('🔍 Début check rôle...');
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        console.error('Erreur session:', sessionError);
+        return;
+      }
+      if (!session?.user) {
+        console.log('Pas de session user');
+        return;
+      }
 
       const userId = session.user.id;
+      console.log('User ID:', userId, 'Email:', session.user.email);
+
       const { data: adminRow, error } = await supabase
         .from('admins')
-        .select('id')
+        .select('id, email')
         .eq('id', userId)
         .maybeSingle();
 
-      // même en cas d'erreur, on évite de bloquer l'utilisateur
+      console.log('Query admins résultat:', adminRow, 'Erreur:', error);
+
       if (error) {
         console.error('Erreur check admin:', error.message);
+        showMessage('Erreur lors du check de rôle. Contacte un dev.', 'error');
+        setTimeout(() => window.location.href = 'employe.html', 2000);
+        return;
       }
 
-      window.location.href = adminRow ? 'admin.html' : 'employe.html';
+      const target = adminRow ? 'admin.html' : 'employe.html';
+      console.log(`Redirection vers: ${target}`);
+      window.location.href = target;
     }
 
-    // Connexion
+    // Connexion par email (Magic Link pour admins et employés)
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       msg.style.display = 'none';
 
       const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
 
-      if (!email || !password) {
-        showMessage('Veuillez remplir tous les champs.');
+      if (!email) {
+        showMessage('Veuillez remplir votre email.');
         return;
       }
 
+      console.log('Envoi Magic Link pour:', email);
+
       setLoading(true);
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error || !data?.user) {
-          showMessage('Email ou mot de passe incorrect.');
-          return;
+        const { error } = await supabase.auth.signInWithOtp({ email });
+        if (error) {
+          console.error('Erreur Magic Link:', error.message);
+          showMessage(error.message.includes('not confirmed') ? 'Confirmez d\'abord votre email.' : 'Erreur : Vérifiez votre email et réessayez.');
+        } else {
+          showMessage('Lien envoyé ! Vérifiez votre boîte de réception (et spam). Cliquez dessus pour vous connecter.', 'success');
         }
-        showMessage('Connexion réussie ! Redirection…', 'success');
-        await redirectByRole();
       } catch (err) {
-        console.error(err);
-        showMessage("Une erreur est survenue lors de la connexion.");
+        console.error('Catch Magic Link:', err);
+        showMessage("Une erreur est survenue.");
       } finally {
         setLoading(false);
       }
     });
 
-    // Déjà connecté ? Redirige automatiquement
+    // Au chargement : Check bypass D'ABORD, puis session
     document.addEventListener('DOMContentLoaded', async () => {
+      console.log('Page chargée...');
+      if (checkBypass()) {
+        return;  // Si bypass, on skip le reste
+      }
+      console.log('Check session auto...');
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
+        console.log('Session existante, user:', session.user.email);
         await redirectByRole();
+      } else {
+        console.log('Pas de session existante');
       }
     });
 
-    // Logout auto: si la session se ferme ailleurs, on revient ici
-    supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') {
+    // Écoute les changements auth (important pour Magic Link)
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Événement auth:', event);
+      if (event === 'SIGNED_IN' && session?.user) {
+        showMessage('Connexion confirmée ! Redirection…', 'success');
+        await redirectByRole();
+      } else if (event === 'SIGNED_OUT') {
         window.location.href = 'index.html';
       }
     });
