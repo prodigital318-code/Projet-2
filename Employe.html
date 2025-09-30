@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head><meta charset="utf-8"/><title>Employé</title></head>
+<body>
+  <div id="content" hidden>
+    <h1>Espace Employé</h1>
+    <button id="logout">Se déconnecter</button>
+  </div>
+  <div id="loader">Vérification…</div>
+
+  <script type="module">
+    import { supabase } from './config.js';
+
+    async function guard() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return window.location.replace('index.html');
+
+      // Option : si tu veux renvoyer un admin vers admin.html :
+      const { data: isAdmin, error } = await supabase.rpc('is_admin');
+      if (error) { console.error(error); }
+      if (isAdmin) return window.location.replace('admin.html');
+
+      document.getElementById('loader').hidden = true;
+      document.getElementById('content').hidden = false;
+
+      document.getElementById('logout').addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        window.location.replace('index.html');
+      });
+    }
+
+    guard();
+  </script>
+</body>
+</html>
