@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Connexion (Magic Link)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto;min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea,#764ba2)}
+    .card{background:#fff;padding:32px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.12);width:100%;max-width:420px}
+    input{width:100%;padding:12px;border-radius:10px;border:1.5px solid #e6e8eb;margin-bottom:12px}
+    button{width:100%;padding:12px;border-radius:10px;border:0;background:#2699e7;color:#fff;font-weight:600;cursor:pointer}
+    .msg{margin-top:12px;padding:10px;border-radius:8px;display:none}
+    .ok{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+    .err{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
+    a.small{display:inline-block;margin-top:8px;color:#666;font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="card" role="main">
+    <h2 style="text-align:center;margin-bottom:18px">Connexion par email</h2>
+    <form id="form">
+      <label for="email" style="display:block;margin-bottom:6px;color:#444">Email</label>
+      <input id="email" type="email" autocomplete="username" placeholder="nom@domaine.com" required />
+      <button type="submit">Recevoir le lien</button>
+    </form>
+    <div id="msg" class="msg" aria-live="polite"></div>
+    <div style="text-align:center"><a class="small" href="reset-password.html" hidden>Mot de passe (non utilisé)</a></div>
+  </div>
+
+  <script type="module">
+    import { supabase } from './config.js';
+
+    const form = document.getElementById('form');
+    const msg  = document.getElementById('msg');
+
+    function show(text, type='err'){
+      msg.textContent = text;
+      msg.className = 'msg ' + (type === 'ok' ? 'ok' : 'err');
+      msg.style.display = 'block';
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.style.display = 'none';
+      const email = document.getElementById('email').value.trim();
+      if (!email) { show('Entrez un email valide.'); return; }
+
+      // IMPORTANT: rediriger vers callback.html
+      const emailRedirectTo = `${location.origin}/callback.html`;
+
+      try {
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: { emailRedirectTo }
+        });
+
+        if (error) {
+          console.error('Magic Link error', error);
+          show('Erreur envoi lien : ' + error.message);
+        } else {
+          show('Lien envoyé ! Ouvre le lien dans le même navigateur.', 'ok');
+        }
+      } catch (err) {
+        console.error(err);
+        show('Erreur inattendue.');
+      }
+    });
+  </script>
+</body>
+</html>
