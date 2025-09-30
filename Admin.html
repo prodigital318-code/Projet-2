@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+<head><meta charset="utf-8"/><title>Admin</title></head>
+<body>
+  <div id="content" hidden>
+    <h1>Tableau de bord Admin</h1>
+    <button id="logout">Se déconnecter</button>
+  </div>
+  <div id="loader">Vérification…</div>
+
+  <script type="module">
+    import { supabase } from './config.js';
+
+    async function guard() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return window.location.replace('index.html');
+
+      const { data: isAdmin, error } = await supabase.rpc('is_admin');
+      if (error) { console.error(error); return window.location.replace('index.html'); }
+      if (!isAdmin) return window.location.replace('employe.html');
+
+      document.getElementById('loader').hidden = true;
+      document.getElementById('content').hidden = false;
+
+      document.getElementById('logout').addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        window.location.replace('index.html');
+      });
+    }
+
+    guard();
+  </script>
+</body>
+</html>
